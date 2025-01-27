@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizable Drawing Canvas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .controls {
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+    .controls input {
+      margin-left: 5px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background: white;
+      cursor: crosshair;
+    }
+    .buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label>
+      Brush Size:
+      <input type="range" id="brush-size" min="1" max="20" value="5">
+    </label>
+    <label>
+      Brush Color:
+      <input type="color" id="brush-color" value="#000000">
+    </label>
+    <label>
+      Canvas Background:
+      <input type="color" id="canvas-background" value="#ffffff">
+    </label>
+  </div>
+  <canvas id="drawing-canvas" width="800" height="600"></canvas>
+  <div class="buttons">
+    <button id="undo">Undo</button>
+    <button id="clear">Clear</button>
+    <button id="save">Save</button>
+  </div>
+  <script>
+    const canvas = document.getElementById('drawing-canvas');
+    const ctx = canvas.getContext('2d');
+    const brushSizeInput = document.getElementById('brush-size');
+    const brushColorInput = document.getElementById('brush-color');
+    const canvasBackgroundInput = document.getElementById('canvas-background');
+    const undoButton = document.getElementById('undo');
+    const clearButton = document.getElementById('clear');
+    const saveButton = document.getElementById('save');
+
+    let painting = false;
+    let brushSize = brushSizeInput.value;
+    let brushColor = brushColorInput.value;
+    let backgroundColor = canvasBackgroundInput.value;
+    let strokes = [];
+    let currentStroke = [];
+
+    // Initialize canvas background
+    function initializeCanvas() {
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    initializeCanvas();
+
+    canvas.addEventListener('mousedown', (e) => {
+      painting = true;
+      currentStroke = [];
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!painting) return;
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      currentStroke.push({ x: e.offsetX, y: e.offsetY, color: brushColor, size: brushSize });
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      painting = false;
+      strokes.push(currentStroke);
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      painting = false;
+    });
+
+    brushSizeInput.addEventListener('input', (e) => {
+      brushSize = e.target.value;
+    });
+
+    brushColorInput.addEventListener('input', (e) => {
+      brushColor = e.target.value;
+    });
+
+    canvasBackgroundInput.addEventListener('input', (e) => {
+      backgroundColor = e.target.value;
+      initializeCanvas();
+      redrawCanvas();
+    });
+
+    undoButton.addEventListener('click', () => {
+      strokes.pop();
+      initializeCanvas();
+      redrawCanvas();
+    });
+
+    clearButton.addEventListener('click', () => {
+      strokes = [];
+      initializeCanvas();
+    });
+
+    saveButton.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'canvas-drawing.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+
+    function redrawCanvas() {
+      strokes.forEach(stroke => {
+        ctx.beginPath();
+        stroke.forEach((point, index) => {
+          ctx.strokeStyle = point.color;
+          ctx.lineWidth = point.size;
+          ctx.lineCap = 'round';
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+            ctx.stroke();
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
