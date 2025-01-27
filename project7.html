@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to bottom right, #74ebd5, #acb6e5);
+    }
+    .calculator {
+      width: 300px;
+      padding: 20px;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    .display {
+      width: 100%;
+      height: 60px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      border: none;
+      border-radius: 5px;
+      text-align: right;
+      font-size: 1.5rem;
+      padding: 10px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    button {
+      height: 50px;
+      font-size: 1rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .operator {
+      background: #f39c12;
+    }
+    .operator:hover {
+      background: #e67e22;
+    }
+    .clear {
+      background: #e74c3c;
+    }
+    .clear:hover {
+      background: #c0392b;
+    }
+    .advanced {
+      background: #8e44ad;
+    }
+    .advanced:hover {
+      background: #71368a;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <input type="text" id="display" class="display" disabled />
+    <div class="buttons">
+      <button class="clear" onclick="clearDisplay()">C</button>
+      <button class="advanced" onclick="percent()">%</button>
+      <button class="advanced" onclick="squareRoot()">√</button>
+      <button class="operator" onclick="input('/')">÷</button>
+
+      <button onclick="input('7')">7</button>
+      <button onclick="input('8')">8</button>
+      <button onclick="input('9')">9</button>
+      <button class="operator" onclick="input('*')">×</button>
+
+      <button onclick="input('4')">4</button>
+      <button onclick="input('5')">5</button>
+      <button onclick="input('6')">6</button>
+      <button class="operator" onclick="input('-')">−</button>
+
+      <button onclick="input('1')">1</button>
+      <button onclick="input('2')">2</button>
+      <button onclick="input('3')">3</button>
+      <button class="operator" onclick="input('+')">+</button>
+
+      <button onclick="input('0')">0</button>
+      <button onclick="input('.')">.</button>
+      <button onclick="calculate()">=</button>
+      <button class="advanced" onclick="memoryRecall()">MR</button>
+    </div>
+  </div>
+
+  <script>
+    let currentInput = '';
+    let memory = null;
+
+    function input(value) {
+      currentInput += value;
+      updateDisplay();
+    }
+
+    function clearDisplay() {
+      currentInput = '';
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById('display').value = currentInput || '0';
+    }
+
+    function calculate() {
+      try {
+        currentInput = eval(currentInput).toString();
+        updateDisplay();
+      } catch (error) {
+        currentInput = 'Error';
+        updateDisplay();
+        setTimeout(() => clearDisplay(), 1500);
+      }
+    }
+
+    function percent() {
+      try {
+        currentInput = (parseFloat(currentInput) / 100).toString();
+        updateDisplay();
+      } catch (error) {
+        currentInput = 'Error';
+        updateDisplay();
+        setTimeout(() => clearDisplay(), 1500);
+      }
+    }
+
+    function squareRoot() {
+      try {
+        currentInput = Math.sqrt(parseFloat(currentInput)).toString();
+        updateDisplay();
+      } catch (error) {
+        currentInput = 'Error';
+        updateDisplay();
+        setTimeout(() => clearDisplay(), 1500);
+      }
+    }
+
+    function memoryRecall() {
+      if (memory !== null) {
+        currentInput += memory.toString();
+        updateDisplay();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.key >= 0 && e.key <= 9) || ['+', '-', '*', '/', '.'].includes(e.key)) {
+        input(e.key);
+      } else if (e.key === 'Enter') {
+        calculate();
+      } else if (e.key === 'Backspace') {
+        currentInput = currentInput.slice(0, -1);
+        updateDisplay();
+      } else if (e.key === 'Escape') {
+        clearDisplay();
+      }
+    });
+  </script>
+</body>
+</html>

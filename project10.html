@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizable Keyboard Trainer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f0f0f5;
+    }
+    .container {
+      width: 80%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .difficulty {
+      margin-bottom: 20px;
+    }
+    .text-display {
+      font-size: 1.5rem;
+      font-family: 'Courier New', Courier, monospace;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .input-area {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    .stats {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="difficulty">
+      <label for="difficulty">Difficulty: </label>
+      <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <button onclick="startGame()">Start</button>
+    </div>
+    <div class="text-display" id="text-display"></div>
+    <textarea id="input-area" class="input-area" placeholder="Start typing here..." disabled></textarea>
+    <div class="stats" id="stats"></div>
+    <button onclick="resetGame()">Restart</button>
+  </div>
+
+  <script>
+    const easyWords = ["apple", "banana", "grape", "orange", "pear"];
+    const mediumWords = ["butterfly", "mountain", "keyboard", "building", "strawberry"];
+    const hardWords = ["architecture", "complexity", "transformation", "miscommunication", "hypothetical"];
+    let currentText = "";
+    let startTime;
+    let timer;
+
+    function getRandomText(difficulty) {
+      const source = difficulty === 'easy' ? easyWords : difficulty === 'medium' ? mediumWords : hardWords;
+      return Array.from({ length: 10 }, () => source[Math.floor(Math.random() * source.length)]).join(' ');
+    }
+
+    function startGame() {
+      const difficulty = document.getElementById('difficulty').value;
+      currentText = getRandomText(difficulty);
+      document.getElementById('text-display').innerText = currentText;
+      document.getElementById('input-area').value = "";
+      document.getElementById('input-area').disabled = false;
+      document.getElementById('input-area').focus();
+      document.getElementById('stats').innerText = "";
+      startTime = Date.now();
+
+      document.getElementById('input-area').addEventListener('input', onType);
+      updateStats();
+    }
+
+    function onType() {
+      const inputArea = document.getElementById('input-area');
+      const typedText = inputArea.value;
+      const textDisplay = document.getElementById('text-display');
+
+      let correctText = "";
+      for (let i = 0; i < typedText.length; i++) {
+        if (typedText[i] === currentText[i]) {
+          correctText += `<span style='color: green;'>${typedText[i]}</span>`;
+        } else {
+          correctText += `<span style='color: red;'>${typedText[i] || ""}</span>`;
+        }
+      }
+
+      textDisplay.innerHTML = correctText + currentText.slice(typedText.length);
+      updateStats();
+
+      if (typedText === currentText) {
+        clearInterval(timer);
+        const elapsedTime = (Date.now() - startTime) / 1000;
+        const wordsPerMinute = (currentText.split(' ').length / elapsedTime) * 60;
+        const accuracy = (typedText.split('').filter((char, i) => char === currentText[i]).length / currentText.length) * 100;
+
+        document.getElementById('stats').innerText = `WPM: ${Math.round(wordsPerMinute)} | Accuracy: ${Math.round(accuracy)}% | Time: ${elapsedTime.toFixed(2)}s`;
+        inputArea.disabled = true;
+      }
+    }
+
+    function updateStats() {
+      const typedText = document.getElementById('input-area').value;
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      const wordsPerMinute = (typedText.split(' ').length / elapsedTime) * 60;
+      const accuracy = (typedText.split('').filter((char, i) => char === currentText[i]).length / typedText.length) * 100 || 0;
+
+      document.getElementById('stats').innerText = `WPM: ${Math.round(wordsPerMinute)} | Accuracy: ${Math.round(accuracy)}%`;
+    }
+
+    function resetGame() {
+      document.getElementById('text-display').innerText = "";
+      document.getElementById('input-area').value = "";
+      document.getElementById('input-area').disabled = true;
+      document.getElementById('stats').innerText = "";
+    }
+  </script>
+</body>
+</html>

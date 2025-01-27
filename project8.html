@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Story Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f9;
+    }
+    .story-container {
+      width: 80%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .choices {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .progress {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .reset {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .reset:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="story-container">
+    <div id="story"></div>
+    <div class="choices" id="choices"></div>
+    <button class="reset" onclick="resetGame()">Reset Game</button>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <script>
+    const storyData = {
+      start: {
+        text: "You wake up in a mysterious forest. There are paths to the north and south. What do you do?",
+        choices: [
+          { text: "Go north", next: "northPath" },
+          { text: "Go south", next: "southPath" }
+        ]
+      },
+      northPath: {
+        text: "You find a river blocking your path. You can swim across or build a raft.",
+        choices: [
+          { text: "Swim across", next: "swim" },
+          { text: "Build a raft", next: "raft" }
+        ]
+      },
+      southPath: {
+        text: "You encounter a group of travelers who offer to guide you. Do you join them or continue alone?",
+        choices: [
+          { text: "Join them", next: "joinTravelers" },
+          { text: "Continue alone", next: "continueAlone" }
+        ]
+      },
+      swim: {
+        text: "The current is too strong, and you are swept away. You wake up back at the forest start.",
+        choices: [
+          { text: "Start over", next: "start" }
+        ]
+      },
+      raft: {
+        text: "You build a raft and safely cross the river, finding a small village.",
+        choices: [
+          { text: "Explore the village", next: "village" },
+          { text: "Rest in the village", next: "rest" }
+        ]
+      },
+      joinTravelers: {
+        text: "The travelers guide you to a hidden city, where you find safety and a new home.",
+        choices: []
+      },
+      continueAlone: {
+        text: "You continue alone and find a treasure chest in a clearing.",
+        choices: []
+      },
+      village: {
+        text: "The villagers welcome you warmly and offer you a place to stay.",
+        choices: []
+      },
+      rest: {
+        text: "You rest and regain your strength, ready for new adventures.",
+        choices: []
+      }
+    };
+
+    let currentStory = "start";
+
+    function updateStory() {
+      const story = storyData[currentStory];
+      document.getElementById("story").innerText = story.text;
+
+      const choicesElement = document.getElementById("choices");
+      choicesElement.innerHTML = "";
+
+      story.choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.innerText = choice.text;
+        button.onclick = () => {
+          currentStory = choice.next;
+          saveProgress();
+          updateStory();
+        };
+        choicesElement.appendChild(button);
+      });
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const progress = Object.keys(storyData).indexOf(currentStory) + 1;
+      const total = Object.keys(storyData).length;
+      document.getElementById("progress").innerText = `Progress: ${progress} / ${total}`;
+    }
+
+    function resetGame() {
+      currentStory = "start";
+      saveProgress();
+      updateStory();
+    }
+
+    function saveProgress() {
+      localStorage.setItem("storyProgress", currentStory);
+    }
+
+    function loadProgress() {
+      const savedProgress = localStorage.getItem("storyProgress");
+      if (savedProgress) {
+        currentStory = savedProgress;
+      }
+      updateStory();
+    }
+
+    loadProgress();
+  </script>
+</body>
+</html>

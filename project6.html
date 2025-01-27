@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Periodic Table</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f0f0f5;
+      min-height: 100vh;
+    }
+    .search-bar {
+      margin: 20px;
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .table-container {
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      gap: 5px;
+      max-width: 1200px;
+      margin: 20px;
+    }
+    .element {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #ffffff;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+    }
+    .element:hover {
+      transform: scale(1.1);
+      background-color: #e0e7ff;
+    }
+    .element.selected {
+      background-color: #4caf50;
+      color: white;
+    }
+    .info-panel {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 600px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .info-panel h2 {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Search elements by name, symbol, or atomic number...">
+  </div>
+  <div class="table-container" id="table-container"></div>
+  <div class="info-panel" id="info-panel">
+    <h2>Click on an element to see details</h2>
+  </div>
+
+  <script>
+    const elements = [
+      { number: 1, symbol: "H", name: "Hydrogen", group: "Nonmetals", position: { row: 1, column: 1 } },
+      { number: 2, symbol: "He", name: "Helium", group: "Noble Gases", position: { row: 1, column: 18 } },
+      { number: 3, symbol: "Li", name: "Lithium", group: "Alkali Metals", position: { row: 2, column: 1 } },
+      { number: 4, symbol: "Be", name: "Beryllium", group: "Alkaline Earth Metals", position: { row: 2, column: 2 } },
+      { number: 5, symbol: "B", name: "Boron", group: "Metalloids", position: { row: 2, column: 13 } },
+      { number: 6, symbol: "C", name: "Carbon", group: "Nonmetals", position: { row: 2, column: 14 } },
+      { number: 7, symbol: "N", name: "Nitrogen", group: "Nonmetals", position: { row: 2, column: 15 } },
+      { number: 8, symbol: "O", name: "Oxygen", group: "Nonmetals", position: { row: 2, column: 16 } },
+      { number: 9, symbol: "F", name: "Fluorine", group: "Halogens", position: { row: 2, column: 17 } },
+      { number: 10, symbol: "Ne", name: "Neon", group: "Noble Gases", position: { row: 2, column: 18 } },
+      { number: 11, symbol: "Na", name: "Sodium", group: "Alkali Metals", position: { row: 3, column: 1 } },
+      { number: 12, symbol: "Mg", name: "Magnesium", group: "Alkaline Earth Metals", position: { row: 3, column: 2 } },
+      { number: 13, symbol: "Al", name: "Aluminum", group: "Post-transition Metals", position: { row: 3, column: 13 } },
+      { number: 14, symbol: "Si", name: "Silicon", group: "Metalloids", position: { row: 3, column: 14 } },
+      { number: 15, symbol: "P", name: "Phosphorus", group: "Nonmetals", position: { row: 3, column: 15 } },
+      { number: 16, symbol: "S", name: "Sulfur", group: "Nonmetals", position: { row: 3, column: 16 } },
+      { number: 17, symbol: "Cl", name: "Chlorine", group: "Halogens", position: { row: 3, column: 17 } },
+      { number: 18, symbol: "Ar", name: "Argon", group: "Noble Gases", position: { row: 3, column: 18 } },
+      { number: 19, symbol: "K", name: "Potassium", group: "Alkali Metals", position: { row: 4, column: 1 } },
+      { number: 20, symbol: "Ca", name: "Calcium", group: "Alkaline Earth Metals", position: { row: 4, column: 2 } },
+      { number: 21, symbol: "Sc", name: "Scandium", group: "Transition Metals", position: { row: 4, column: 3 } },
+      { number: 22, symbol: "Ti", name: "Titanium", group: "Transition Metals", position: { row: 4, column: 4 } },
+      { number: 23, symbol: "V", name: "Vanadium", group: "Transition Metals", position: { row: 4, column: 5 } },
+      { number: 24, symbol: "Cr", name: "Chromium", group: "Transition Metals", position: { row: 4, column: 6 } },
+      { number: 25, symbol: "Mn", name: "Manganese", group: "Transition Metals", position: { row: 4, column: 7 } },
+      { number: 26, symbol: "Fe", name: "Iron", group: "Transition Metals", position: { row: 4, column: 8 } },
+      { number: 27, symbol: "Co", name: "Cobalt", group: "Transition Metals", position: { row: 4, column: 9 } },
+      { number: 28, symbol: "Ni", name: "Nickel", group: "Transition Metals", position: { row: 4, column: 10 } },
+      { number: 29, symbol: "Cu", name: "Copper", group: "Transition Metals", position: { row: 4, column: 11 } },
+      { number: 30, symbol: "Zn", name: "Zinc", group: "Transition Metals", position: { row: 4, column: 12 } },
+      { number: 31, symbol: "Ga", name: "Gallium", group: "Post-transition Metals", position: { row: 4, column: 13 } },
+      { number: 32, symbol: "Ge", name: "Germanium", group: "Metalloids", position: { row: 4, column: 14 } },
+      { number: 33, symbol: "As", name: "Arsenic", group: "Metalloids", position: { row: 4, column: 15 } },
+      { number: 34, symbol: "Se", name: "Selenium", group: "Nonmetals", position: { row: 4, column: 16 } },
+      { number: 35, symbol: "Br", name: "Bromine", group: "Halogens", position: { row: 4, column: 17 } },
+      { number: 36, symbol: "Kr", name: "Krypton", group: "Noble Gases", position: { row: 4, column: 18 } },
+      { number: 118, symbol: "Og", name: "Oganesson", group: "Noble Gases", position: { row: 7, column: 18 } }
+    ];
+
+    const tableContainer = document.getElementById('table-container');
+    const infoPanel = document.getElementById('info-panel');
+    const searchInput = document.getElementById('search');
+
+    function createTable() {
+      elements.forEach(element => {
+        const elementDiv = document.createElement('div');
+        elementDiv.classList.add('element');
+        elementDiv.style.gridColumn = element.position.column;
+        elementDiv.style.gridRow = element.position.row;
+        elementDiv.dataset.number = element.number;
+        elementDiv.dataset.group = element.group;
+
+        elementDiv.innerHTML = `
+          <strong>${element.symbol}</strong>
+          <span>${element.number}</span>
+        `;
+
+        elementDiv.addEventListener('click', () => {
+          highlightElement(elementDiv, element);
+        });
+
+        tableContainer.appendChild(elementDiv);
+      });
+    }
+
+    function highlightElement(elementDiv, element) {
+      document.querySelectorAll('.element').forEach(el => el.classList.remove('selected'));
+      elementDiv.classList.add('selected');
+
+      const groupElements = document.querySelectorAll(
+        `.element[data-group='${element.group}']`
+      );
+
+      groupElements.forEach(el => el.style.backgroundColor = '#cce5ff');
+
+      setTimeout(() => {
+        groupElements.forEach(el => el.style.backgroundColor = '');
+      }, 3000);
+
+      infoPanel.innerHTML = `
+        <h2>${element.name} (${element.symbol})</h2>
+        <p>Atomic Number: ${element.number}</p>
+        <p>Group: ${element.group}</p>
+      `;
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.element').forEach(el => {
+        const name = el.querySelector('strong').textContent.toLowerCase();
+        const number = el.dataset.number.toLowerCase();
+        if (name.includes(query) || number.includes(query)) {
+          el.style.transform = 'scale(1.1)';
+          setTimeout(() => el.style.transform = '', 300);
+        } else {
+          el.style.display = query ? 'none' : '';
+        }
+      });
+    });
+
+    createTable();
+  </script>
+</body>
+</html>
